@@ -18,3 +18,5 @@ rebar3.crashdump
 
 # GRiSP
 _grisp
+
+.DS_Store
