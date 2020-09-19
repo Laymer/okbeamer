@@ -1,0 +1,22 @@
+{application, okbeamer, [
+    {description, "A GRiSP application"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {mod, {okbeamer_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        grisp
+    ]},
+    {env,[]},
+    {modules, [
+        okbeamer
+        , okbeamer_app
+        , okbeamer_sup
+        , okbeamer_server
+    ]},
+
+    {maintainers, []},
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.
