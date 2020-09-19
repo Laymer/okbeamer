@@ -20,3 +20,5 @@ rebar3.crashdump
 _grisp
 
 .DS_Store
+
+grisp/grisp_base/files/wpa_supplicant.conf

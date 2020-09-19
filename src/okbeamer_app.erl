@@ -10,6 +10,8 @@
 
 %--- Callbacks -----------------------------------------------------------------
 
-start(_Type, _Args) -> okbeamer_sup:start_link().
+start(_Type, _Args) -> 
+	grisp_led:color(2, red),
+	okbeamer_sup:start_link().
 
 stop(_State) -> ok.

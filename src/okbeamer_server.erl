@@ -57,6 +57,7 @@ start_link() ->
     {ok , State :: #state{}} | {ok , State :: #state{} , timeout() | hibernate} |
     {stop , Reason :: term()} | ignore).
 init([]) ->
+    grisp_led:color(1, green),
     {ok , #state{}}.
 
 %%--------------------------------------------------------------------
