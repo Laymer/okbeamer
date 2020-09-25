@@ -31,6 +31,15 @@
 -define(gpio1_pins_2 , [gpio1_1, gpio1_2]).
 -define(gpio1_pins_1 , [gpio1_1]).
 
+-define(gpio2_pins , [gpio2_1, gpio2_2, gpio2_3, gpio2_4]).
+-define(gpio2_pins_4 , [gpio2_1, gpio2_2, gpio2_3, gpio2_4]).
+-define(gpio2_pins_3 , [gpio2_1, gpio2_2, gpio2_3]).
+-define(gpio2_pins_2 , [gpio2_1, gpio2_2]).
+-define(gpio2_pins_1 , [gpio2_1]).
+
+
+-define(gpio_pins_all , ?gpio1_pins ++ ?gpio2_pins).
+
 -record(state , {}).
 
 %%%===================================================================
@@ -71,6 +80,7 @@ init([]) ->
 
     %% Configure slot for Board -> Pmod communication with pins set to 0
     grisp_gpio:configure_slot(gpio1, {output_0, output_0, output_0, output_0}),
+    grisp_gpio:configure_slot(gpio2, {output_0, output_0, output_0, output_0}),
     {ok , #state{}}.
 
 %%--------------------------------------------------------------------
@@ -159,26 +169,30 @@ code_change(_OldVsn , State , _Extra) ->
 %%--------------------------------------------------------------------
 %% @private
 %% @doc
-%% Switches last 4 Pmod_8LD LEDs on
+%% Switches Pmod_8LD LEDs on
 %%
 %% @end
 %%--------------------------------------------------------------------
 leds_on() ->
-    _ = [ grisp_gpio:set(Pin) || Pin <- ?gpio1_pins ].
-leds_on(Pins) ->
-    _ = [ grisp_gpio:set(Pin) || Pin <- Pins ].
+    _ = [ grisp_gpio:set(Pin) || Pin <- ?gpio_pins_all ].
+leds_on(Pins) when is_list(Pins) ->
+    _ = [ grisp_gpio:set(Pin) || Pin <- Pins ];
+leds_on(N) when is_integer(N) ; N >= 0 ; N =< 8 ->
+    _ = [ grisp_gpio:set(pin_at_index(Pin)) || Pin <- lists:seq(1, N) ].
 
 %%--------------------------------------------------------------------
 %% @private
 %% @doc
-%% Switches last 4 Pmod_8LD LEDs off
+%% Switches Pmod_8LD LEDs off
 %%
 %% @end
 %%--------------------------------------------------------------------
 leds_off() ->
-    _ = [ grisp_gpio:clear(Pin) || Pin <- ?gpio1_pins ].
-leds_off(Pins) ->
-    _ = [ grisp_gpio:clear(Pin) || Pin <- Pins ].
+    _ = [ grisp_gpio:clear(Pin) || Pin <- ?gpio_pins_all ].
+leds_off(Pins) when is_list(Pins) ->
+    _ = [ grisp_gpio:clear(Pin) || Pin <- Pins ];    
+leds_off(N) when is_integer(N) ; N >= 0 ; N =< 8 ->
+    _ = [ grisp_gpio:set(pin_at_index(Pin)) || Pin <- lists:seq(1, N) ].
     
 leds_split(0, 4) -> leds_off();
 leds_split(1, 3) -> leds_on(?gpio1_pins_1), leds_off(?gpio1_pins_3);
@@ -187,20 +201,66 @@ leds_split(3, 1) -> leds_on(?gpio1_pins_3), leds_off(?gpio1_pins_1);
 leds_split(4, 0) -> leds_on().
 
 light_meter_mode(0) ->
-    ok;
+    leds_off();
 light_meter_mode(N) ->
     leds_off(),
     light_meter(pmod_als:percentage()),
     % timer:sleep(10),
     light_meter_mode(N - 1).
 
-light_meter(Percentage) when Percentage >= 0 andalso Percentage < 20 -> 
+% light_meter(Percentage) when Percentage >= 0 andalso Percentage < 20 -> 
+%     leds_off();
+% light_meter(Percentage) when Percentage >= 20 andalso Percentage < 40 -> 
+%     grisp_gpio:set(gpio1_1);
+% light_meter(Percentage) when Percentage >= 40 andalso Percentage < 60 -> 
+%     leds_on(?gpio1_pins_2);
+% light_meter(Percentage) when Percentage >= 60 andalso Percentage < 80 -> 
+%     leds_on(?gpio1_pins_3);
+% light_meter(Percentage) when Percentage >= 80 andalso Percentage =< 100 -> 
+%     leds_on().
+
+light_meter(Percentage) when Percentage >= 0 andalso Percentage < 10 -> 
     leds_off();
-light_meter(Percentage) when Percentage >= 20 andalso Percentage < 40 -> 
-    grisp_gpio:set(gpio1_1);
-light_meter(Percentage) when Percentage >= 40 andalso Percentage < 60 -> 
-    leds_on(?gpio1_pins_2);
-light_meter(Percentage) when Percentage >= 60 andalso Percentage < 80 -> 
-    leds_on(?gpio1_pins_3);
-light_meter(Percentage) when Percentage >= 80 andalso Percentage =< 100 -> 
+light_meter(Percentage) when Percentage >= 10 andalso Percentage < 20 -> 
+    leds_on(1);
+light_meter(Percentage) when Percentage >= 20 andalso Percentage < 30 -> 
+    leds_on(2);
+light_meter(Percentage) when Percentage >= 30 andalso Percentage < 40 -> 
+    leds_on(3);
+light_meter(Percentage) when Percentage >= 40 andalso Percentage < 50 -> 
+    leds_on(4);
+light_meter(Percentage) when Percentage >= 50 andalso Percentage < 60 -> 
+    leds_on(5);
+light_meter(Percentage) when Percentage >= 60 andalso Percentage < 75 -> 
+    leds_on(6);
+light_meter(Percentage) when Percentage >= 75 andalso Percentage < 88 -> 
+    leds_on(7);
+light_meter(Percentage) when Percentage >= 88 andalso Percentage =< 100 -> 
     leds_on().
+    % leds_on(8);
+
+pin_at_index(1) -> gpio2_1;
+pin_at_index(2) -> gpio2_2;
+pin_at_index(3) -> gpio2_3;
+pin_at_index(4) -> gpio2_4;
+pin_at_index(5) -> gpio1_1;
+pin_at_index(6) -> gpio1_2;
+pin_at_index(7) -> gpio1_3;
+pin_at_index(8) -> gpio1_4;
+pin_at_index(Arg) -> undefined.
+
+% adding_handler(#{config := RawConfig} = LoggerConfig) ->
+%     DgramConfig = maps:merge(?DEFAULT_CONFIG, RawConfig),
+%     Parent = self(),
+%     case verify_config([host, port, measurement], DgramConfig) of
+%         ok ->
+%             Pid = spawn(fun() -> Parent ! gen_udp:open(0), 
+%                                  receive stop -> ok end end),
+%             {ok, LoggerConfig#{config => DgramConfig#{
+%                 sock => receive {ok, Socket} -> Socket end,
+%                 pid => Pid,
+%                 measurement => to_binary(maps:get(measurement, DgramConfig))
+%             }}};
+%         Error ->
+%             Error
+%     end.
