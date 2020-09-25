@@ -1,7 +1,9 @@
 %--- Erlang Inet Configuration -------------------------------------------------
 
 % Add hosts
+{host, {192,168,1,52}, ["MBP"]}.
 {host, {192,168,1,51}, ["MBP"]}.
+{host, {192,168,1,57}, ["my_grisp_board_1"]}.
 
 % Do not monitor the hosts file
 {hosts_file, ""}.

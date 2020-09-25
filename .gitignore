@@ -22,3 +22,5 @@ _grisp
 .DS_Store
 
 grisp/grisp_base/files/wpa_supplicant.conf
+
+.tool-versions
